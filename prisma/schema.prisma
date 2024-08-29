@@ -15,8 +15,84 @@ datasource db {
 
 model User {
   id       Int     @id @default(autoincrement())
-  username String  @unique
   email    String  @unique
-  password String?
   name     String
+  username String  @unique
+  password String?
+
+  is_alumni Boolean @default(false)
+  alumni    Alumni?
+}
+
+model Alumni {
+  id                   Int                 @id @default(autoincrement())
+  user                 User                @relation(fields: [user_id], references: [id])
+  user_id              Int                 @unique
+  batch_year           Int
+  stream               String
+  occupation           Occupation?
+  alumni_personal_info AlumniPersonalInfo?
+  skills               Skill[]
+  academic_info        AcademicInfo?
+  additional_info      AdditionalInfo?
+  campus_involvements  CampusInvolvement[]
+}
+
+model Occupation {
+  id                 Int     @id @default(autoincrement())
+  current_occupation String
+  industry           String
+  career_advice      String?
+  job_search_tips    String?
+  alumni             Alumni  @relation(fields: [alumni_id], references: [id])
+  alumni_id          Int     @unique
+}
+
+model AlumniPersonalInfo {
+  id                    Int     @id @default(autoincrement())
+  life_lessons          String?
+  networking_tips       String?
+  challenges_faced      String?
+  personal_growth       String?
+  hobbies_interests     String?
+  community_involvement String?
+  student_suggestions   String?
+  contact_info          String?
+  alumni                Alumni  @relation(fields: [alumni_id], references: [id])
+  alumni_id             Int     @unique
+}
+
+model Skill {
+  id                Int     @id @default(autoincrement())
+  skills_acquired   String
+  recommended_tools String?
+  certifications    String?
+  alumni            Alumni  @relation(fields: [alumni_id], references: [id])
+  alumni_id         Int     @unique
+}
+
+model AcademicInfo {
+  id                   Int     @id @default(autoincrement())
+  memorable_experience String?
+  academic_advice      String?
+  alumni               Alumni  @relation(fields: [alumni_id], references: [id])
+  alumni_id            Int     @unique
+}
+
+model AdditionalInfo {
+  id               Int     @id @default(autoincrement())
+  resume_url       String?
+  portfolio_url    String?
+  github_url       String?
+  linkedin_profile String?
+  alumni           Alumni  @relation(fields: [alumni_id], references: [id])
+  alumni_id        Int     @unique
+}
+
+model CampusInvolvement {
+  id                   Int    @id @default(autoincrement())
+  role                 String
+  organization_or_club String
+  alumni               Alumni @relation(fields: [alumni_id], references: [id])
+  alumni_id            Int    @unique
 }
