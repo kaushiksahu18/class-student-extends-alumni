@@ -1,9 +1,13 @@
 import NextAuth from "next-auth";
 import { NextAuthOptions } from "next-auth";
-import { PrismaClient } from "@prisma/client";
 
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import { prismaClient } from "@/lib/utils";
+
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  throw new Error("Missing Google OAuth environment variables");
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -17,7 +21,6 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         name: { label: "Name", type: "text", placeholder: "Name" },
         email: { label: "Email", type: "email", placeholder: "Email" },
-        username: { label: "Username", type: "text", placeholder: "Username" },
         password: {
           label: "Password",
           type: "password",
@@ -25,35 +28,32 @@ export const authOptions: NextAuthOptions = {
         },
       },
       async authorize(credentials, req) {
-        const prisma = new PrismaClient();
-        try {
-          const dbuser = await prisma.user.upsert({
-            where: {
-              email: credentials?.email,
-              password: credentials?.password,
-            },
-            update: {},
-            create: {
-              name: credentials?.name as string,
-              email: credentials?.email as string,
-              password: credentials?.password,
-              username:
-                credentials?.email?.match(/(.*)@gmail.com$/)?.[1] ||
-                (credentials?.email as string),
-            },
-          });
+        if (credentials && credentials.email && credentials.password) {
+          try {
+            const dbuser = await prismaClient.user.upsert({
+              where: {
+                email: credentials.email,
+                password: credentials.password,
+              },
+              update: { name: credentials?.name as string },
+              create: {
+                name: credentials?.name as string,
+                email: credentials.email,
+                password: credentials.password,
+                username: generateUsername(credentials.email),
+              },
+            });
 
-          if (dbuser.id) {
-            return {
-              ...dbuser,
-              id: dbuser.id.toString()
-            };
+            if (dbuser.id) {
+              return {
+                ...dbuser,
+                id: dbuser.id.toString(),
+              };
+            }
+          } catch (err) {
+            console.log(err);
+            return null;
           }
-        } catch (err) {
-          console.log(err);
-          return null;
-        } finally {
-          await prisma.$disconnect();
         }
         return null;
       },
@@ -61,22 +61,19 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === "google") {
-        const prisma = new PrismaClient();
+      if (account?.provider === "google" && user.email) {
         try {
-          const dbuser = await prisma.user.upsert({
+          const dbuser = await prismaClient.user.upsert({
             where: {
-              email: user.email as string,
+              email: user.email,
             },
             update: {
               name: user.name as string,
             },
             create: {
               name: user.name as string,
-              email: user.email as string,
-              username:
-                user.email?.match(/(.*)@gmail.com$/)?.[1] ||
-                (user.email as string),
+              email: user.email,
+              username: generateUsername(user.email),
             },
           });
 
@@ -87,30 +84,19 @@ export const authOptions: NextAuthOptions = {
         } catch (err) {
           console.log(err);
           return false;
-        } finally {
-          await prisma.$disconnect();
         }
       }
       return true;
     },
-    async redirect({ url, baseUrl }) {
+    async redirect({baseUrl,url}) {
       return baseUrl;
     },
-    async session({ session, user, token }) {
-      return session;
-    },
-    async jwt({ token, user, account, profile, isNewUser }) {
-      return token;
-    },
   },
-  // pages: {
-  //   signIn: '/auth/signin',
-  //   signOut: '/auth/signout',
-  //   error: '/auth/error', // Error code passed in query string as ?error=
-  //   verifyRequest: '/auth/verify-request', // (used for check email message)
-  //   newUser: '/auth/new-user' // New users will be directed here on first sign in (leave the property out if not of interest)
-  // } 
 };
+
+export function generateUsername(email: string): string {
+  return email.split("@")[0] || email;
+}
 
 export const handler = NextAuth(authOptions);
 

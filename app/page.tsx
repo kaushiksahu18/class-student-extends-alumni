@@ -4,9 +4,11 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
+import { useToast } from "@/components/ui/use-toast"
 
 export default function Home() {
   const { data: session } = useSession();
+  const { toast } = useToast()
   const [s, setS] = useState("");
   useEffect(() => {
     try {
@@ -21,13 +23,20 @@ export default function Home() {
       <p>{s}</p>
       <br></br>
       <Link
-        href="/pat"
+        href="/feed"
         className="rounded-lg bg-zinc-600 px-4 py-2 text-white hover:bg-zinc-700"
       >
-        Pat Page
+        Feed Page
       </Link>
       {session && <button
-        onClick={() => signOut({ redirect: true, callbackUrl: "/" })}
+        onClick={() => {
+          signOut({ redirect: true, callbackUrl: "/" })
+          toast({
+            title: "Logged out",
+            description: "You have been logged out",
+            variant: "destructive",
+          })
+        }}
         className="rounded-lg bg-zinc-600 px-4 py-2 text-white hover:bg-zinc-700"
       >
         Logout

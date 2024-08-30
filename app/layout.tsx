@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider, AuthProvider } from "./Providers";
 import { ModeToggle } from "@/components/Theme";
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,7 +27,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>{children}</AuthProvider>
-          <div className="absolute right-4 top-4">
+          <Toaster />
+          <div className="sticky right-4 bottom-4">
             <ModeToggle />
           </div>
         </ThemeProvider>
