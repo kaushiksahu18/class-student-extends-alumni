@@ -11,10 +11,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getColor } from "@/lib/utils";
+import { getColor, getSystemTheme } from "@/lib/utils";
 
 export function ModeToggle() {
-  const { setTheme } = useTheme();
+  const { setTheme,theme } = useTheme();
+  React.useEffect(()=>{
+    document.body.style.backgroundColor = getColor(theme || getSystemTheme());
+  },[])
   
   return (
     <DropdownMenu>
@@ -44,8 +47,8 @@ export function ModeToggle() {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
-            setTheme("system");
-            document.body.style.backgroundColor = getColor("system");
+            setTheme(getSystemTheme());
+            document.body.style.backgroundColor = getColor(getSystemTheme());
           }}
         >
           System

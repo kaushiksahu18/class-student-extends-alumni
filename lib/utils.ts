@@ -7,13 +7,26 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const getColor = (theme: string | undefined) => {
+  const hue = Math.random() * 40 + 200; // Range between 200 and 240 (soft blues, purples)
+  const saturation = theme === "dark" ? 15 + Math.random() * 10 : 30 + Math.random() * 10; // Low saturation for subtlety
+
   let lightness;
   if (theme === "dark") {
-    lightness = Math.random() * 20 + 5;
+    lightness = 15 + Math.random() * 10; // Dark tones for dark theme
   } else {
-    lightness = Math.random() * 20 + 75;
+    lightness = 85 + Math.random() * 5; // Very light tones for light theme
   }
-  return `hsl(${Math.random() * 360}, 100%, ${lightness}%)`;
+
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
+
+export const getSystemTheme = () => {
+  const isDarkTheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  if (isDarkTheme) {
+    return "dark";
+  } else {
+    return "light";
+  }
 };
 
 export const prismaClient = new PrismaClient();
