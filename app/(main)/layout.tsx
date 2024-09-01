@@ -8,9 +8,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { GraduationCapIcon } from "../page";
-import { IoChatboxEllipses, IoChatboxEllipsesOutline } from "react-icons/io5";
-import { GoBell, GoBellFill } from "react-icons/go";
+import { GraduationCapIcon } from "@/components/SVGs";
+import { IoChatboxEllipses } from "react-icons/io5";
+import { GoBellFill } from "react-icons/go";
 import NavItem from "@/components/NavItem";
 import { getServerSession } from "next-auth/next";
 import AutoHome from "@/components/AutoHome";
